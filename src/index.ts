@@ -3,7 +3,7 @@
  * MCP server for self-hosted Plane (Community Edition).
  *
  * Exposes Plane's project-management primitives — projects, work items, states,
- * labels, cycles, modules, comments, activity, links, members, and intake — as
+ * labels, cycles, modules, comments, activity, links, members, intake, and pages — as
  * MCP tools so an LLM can act as a project manager across a Plane workspace.
  *
  * Transport: stdio (this server is designed to run locally, spawned by an MCP
@@ -30,6 +30,7 @@ import { registerWorkItemDetailTools } from "./tools/workitem-detail.js";
 import { registerCycleTools } from "./tools/cycles.js";
 import { registerModuleTools } from "./tools/modules.js";
 import { registerIntakeTools } from "./tools/intake.js";
+import { registerPageTools } from "./tools/pages.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -50,6 +51,7 @@ async function main(): Promise<void> {
   registerCycleTools(server, client);
   registerModuleTools(server, client);
   registerIntakeTools(server, client);
+  registerPageTools(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
