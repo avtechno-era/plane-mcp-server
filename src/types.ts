@@ -142,6 +142,18 @@ export interface PlaneIntakeIssue {
   [key: string]: unknown;
 }
 
+export interface PlanePage {
+  id: string;
+  name: string;
+  description_html?: string;
+  description_stripped?: string;
+  access?: number; // 0 = public, 1 = private
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
 export interface CursorPage<T> {
   results: T[];
   count?: number;
