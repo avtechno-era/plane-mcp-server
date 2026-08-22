@@ -1,0 +1,61 @@
+<!--
+  Evaluation template for plane-mcp-server.
+
+  IMPORTANT: These questions were authored from the Plane API's documented shape
+  (project/work-item/cycle/module fields), NOT verified against a live Plane
+  instance — this build had no connected Plane workspace to explore. Each
+  <answer> is a PLACEHOLDER describing what to fill in, not a verified value.
+
+  Before running scripts/evaluation.py from the mcp-builder skill:
+    1. Point this server at a real (ideally test/staging) Plane workspace.
+    2. For each qa_pair, resolve the described scenario against real data
+       (e.g. via the Plane web UI or these same MCP tools) and replace the
+       <answer> placeholder with the actual, single, verifiable value.
+    3. Delete or rewrite any qa_pair whose described scenario doesn't exist
+       in your workspace (e.g. no completed cycles yet).
+
+  Each question was designed to be independent, read-only, and to require
+  multiple tool calls (list projects -> list cycles/work items -> filter/aggregate).
+-->
+<evaluation>
+  <qa_pair>
+    <question>Across every project in the workspace, find the cycle (sprint) with the highest number of total work items among all cycles whose status is "completed". What is the exact name of that cycle?</question>
+    <answer>REPLACE_WITH_ACTUAL_CYCLE_NAME</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Find the project whose identifier (short key) is alphabetically first among all projects in the workspace. What is that project's full name?</question>
+    <answer>REPLACE_WITH_ACTUAL_PROJECT_NAME</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Look at the workspace member list. Excluding the account the server authenticates as (plane_get_current_user), which member has the numerically highest role value? Provide their display name.</question>
+    <answer>REPLACE_WITH_ACTUAL_DISPLAY_NAME</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>In the project with the most total modules, find the module with a "completed" status whose date range (start_date to target_date) is the longest, measured in days. What is that module's name?</question>
+    <answer>REPLACE_WITH_ACTUAL_MODULE_NAME</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Find the oldest work item (by created_at) still sitting in any project's Intake queue with a Pending status. What is its title?</question>
+    <answer>REPLACE_WITH_ACTUAL_WORK_ITEM_TITLE</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Identify the project that defines the greatest number of custom labels. How many labels does it have?</question>
+    <answer>REPLACE_WITH_ACTUAL_COUNT</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Within the project with the most work items, find the single work item with the most comments. Who (display name) posted the first comment on it, chronologically?</question>
+    <answer>REPLACE_WITH_ACTUAL_DISPLAY_NAME</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Find a work item whose priority is "urgent" and whose state belongs to the "backlog" group. Using its project's identifier and sequence number, what is its human-readable ID in PROJECT-123 format?</question>
+    <answer>REPLACE_WITH_ACTUAL_ID_LIKE_ENG-123</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Among all projects, which one has visibility set to Public (network=2) rather than Secret? Provide its project identifier (short key).</question>
+    <answer>REPLACE_WITH_ACTUAL_IDENTIFIER</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Find the workflow state whose group is "cancelled" in the project with the most total members. What color (hex code) is assigned to that state?</question>
+    <answer>REPLACE_WITH_ACTUAL_HEX_COLOR</answer>
+  </qa_pair>
+</evaluation>

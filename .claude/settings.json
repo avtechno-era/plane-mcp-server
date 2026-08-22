@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "vibe-prospecting@claude-plugins-official": true
+  }
+}
