@@ -28,6 +28,7 @@ import {SupportedTransportTypes} from './types.js';
 
 const TRANSPORT_MODE: SupportedTransportTypes = process.env.MODE?.toLowerCase() === "server" ? "server" : "local";
 const PORT = Number(process.env.PORT ?? 3000);
+const HOST = (process.env.HOST_DOMAIN || "");
 
 function buildServer(): McpServer {
     const server = new McpServer({ name: 'plane-mcp-server', version: '1.0.0' });
@@ -58,7 +59,9 @@ if (TRANSPORT_MODE === 'local') {
 
     // `createMcpHonoApp()` arms localhost host/origin validation by default;
     // bind loopback explicitly to match.
-    const app = createMcpHonoApp();
+    const app = createMcpHonoApp({
+      allowedHosts: [ HOST ]
+    });
     app.all('/mcp', async(c) => {
       const clone = c.req.raw.clone();
       const parsed = await clone.json();
