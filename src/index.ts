@@ -1,25 +1,38 @@
 #!/usr/bin/env node
+
 /**
  * MCP server for self-hosted Plane (Community Edition).
  *
  * Exposes Plane's project-management primitives — projects, work items, states,
- * labels, cycles, modules, comments, activity, links, members, intake, and pages — as
- * MCP tools so an LLM can act as a project manager across a Plane workspace.
+ * labels, cycles, modules, comments, activity, links, members, intake, and pages —
+ * as MCP tools so an LLM can act as a project manager across a Plane workspace.
  *
- * Transport: stdio (this server is designed to run locally, spawned by an MCP
- * client such as Claude Desktop / Claude Code, not exposed over the network).
+ * Transport:
+ *   - local: stdio
+ *   - server: HTTP
  *
  * Required environment variables:
- *   PLANE_BASE_URL       Base URL of your self-hosted Plane instance (no trailing /api/v1)
- *   PLANE_API_KEY        Personal Access Token (Profile Settings > Personal Access Tokens)
+ *   PLANE_BASE_URL  Base URL of your self-hosted Plane instance
+ *                   (no trailing /api/v1)
+ *   PLANE_API_KEY   Personal Access Token
+ *
  * Optional:
- *   PLANE_WORKSPACE_SLUG Default workspace slug used when a tool call omits workspace_slug
+ *   PLANE_WORKSPACE_SLUG
+ *                   Default workspace slug used when a tool call omits
+ *                   workspace_slug.
+ *
+ * Server mode:
+ *   PORT            HTTP port (default: 3000)
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { createServer } from "node:http";
+
 import { loadConfig } from "./config.js";
 import { PlaneClient } from "./client.js";
+
 import { registerUserTools } from "./tools/user.js";
 import { registerProjectTools } from "./tools/projects.js";
 import { registerMemberTools } from "./tools/members.js";
@@ -31,21 +44,21 @@ import { registerCycleTools } from "./tools/cycles.js";
 import { registerModuleTools } from "./tools/modules.js";
 import { registerIntakeTools } from "./tools/intake.js";
 import { registerPageTools } from "./tools/pages.js";
-import {SupportedTransportTypes} from "./types.js";
-import {StreamableHTTPServerTransport} from "@modelcontextprotocol/sdk/server/streamableHttp";
-import {createServer} from "http";
 
-// @ts-ignore
-const TRANSPORT_MODE: SupportedTransportTypes = (process.env.MODE || "local").toLowerCase();
-const PORT = process.env.PORT || 3000;
+type TransportMode = "local" | "server";
 
-async function main(): Promise<void> {
+const TRANSPORT_MODE: TransportMode =
+  process.env.MODE?.toLowerCase() === "server" ? "server" : "local";
+
+const PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
+
+async function createMcpServer(): Promise<McpServer> {
   const config = loadConfig();
   const client = new PlaneClient(config);
 
   const server = new McpServer({
     name: "plane-mcp-server",
-    version: "1.0.0"
+    version: "1.0.0",
   });
 
   registerUserTools(server, client);
@@ -60,44 +73,74 @@ async function main(): Promise<void> {
   registerIntakeTools(server, client);
   registerPageTools(server, client);
 
-  let transport = null;
-  
-  switch(TRANSPORT_MODE){
-    case "local": transport = new StdioServerTransport();break;
-    case "server": transport = new StreamableHTTPServerTransport({});
-  }
+  return server;
+}
 
-  if(transport){
-    await server.connect(transport);
+async function startStdioServer(): Promise<void> {
+  const server = await createMcpServer();
+  const transport = new StdioServerTransport();
 
+  await server.connect(transport);
 
-    if(TRANSPORT_MODE === "server" && transport instanceof StreamableHTTPServerTransport){
-      const http = createServer(async(req, res)=>{
-        if(req.url !== "/mcp"){
-          res.writeHead(404, {"content-type":"text/plain"});
-          res.end("Not Found");
-          return;
-        }
+  console.error("Plane MCP Server is running on stdio");
+}
 
-        try{
-          await transport.handleRequest(req, res);
-        }catch(error){
-          console.error(`MCP request failed:`, error);
+async function startHttpServer(): Promise<void> {
+  const server = await createMcpServer();
 
-          if(!res.headersSent){
-            res.writeHead(500, {"content-type":"application/json"});
-            res.end(JSON.stringify({error}));
-          }
-        }
+  const httpServer = createServer(async (req, res) => {
+    if (req.url !== "/mcp") {
+      res.writeHead(404, {
+        "content-type": "text/plain; charset=utf-8",
       });
-
-      http.listen(PORT,()=>{
-        console.log(`Plane MCP Server is running on port ${PORT}`);
-      });
-    }else{
-      console.log(`Plane MCP Server is running on stdio`);
+      res.end("Not Found");
+      return;
     }
+
+    try {
+      /*
+       * StreamableHTTPServerTransport handles MCP requests over HTTP.
+       *
+       * A new transport is created for each request in this simple
+       * stateless implementation.
+       */
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+      });
+
+      await server.connect(transport);
+
+      await transport.handleRequest(req, res);
+    } catch (error) {
+      console.error("MCP request failed:", error);
+
+      if (!res.headersSent) {
+        res.writeHead(500, {
+          "content-type": "application/json; charset=utf-8",
+        });
+
+        res.end(
+          JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      }
+    }
+  });
+
+  httpServer.listen(PORT, () => {
+    console.error(`Plane MCP Server is running on port ${PORT}`);
+    console.error(`MCP endpoint: http://localhost:${PORT}/mcp`);
+  });
+}
+
+async function main(): Promise<void> {
+  if (TRANSPORT_MODE === "server") {
+    await startHttpServer();
+    return;
   }
+
+  await startStdioServer();
 }
 
 main().catch((error) => {
