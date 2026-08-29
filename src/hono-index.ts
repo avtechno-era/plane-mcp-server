@@ -59,7 +59,9 @@ if (TRANSPORT_MODE === 'local') {
     // `createMcpHonoApp()` arms localhost host/origin validation by default;
     // bind loopback explicitly to match.
     const app = createMcpHonoApp();
-    app.all('/mcp', (c) => {
+    app.all('/mcp', async(c) => {
+      const clone = c.req.raw.clone();
+      const parsed = await clone.json();
       console.error("[mcp]", {
         method: c.req.method,
         url: c.req.url,
@@ -68,11 +70,11 @@ if (TRANSPORT_MODE === 'local') {
         accept: c.req.header("accept"),
         contentType: c.req.header("content-type"),
         userAgent: c.req.header("user-agent"),
-        body: c.req.parseBody()
+        body: parsed
       });
       return handler.fetch(c.req.raw)
     });
     serve({ fetch: app.fetch, port: PORT }, () => {
-        console.log(`[server] listening on http://127.0.0.1:${PORT}/mcp`);
+        console.log(`[plane-mcp-server] Hono listening on ${PORT}/mcp`);
     });
 }
