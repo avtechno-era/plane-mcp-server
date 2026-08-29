@@ -23,4 +23,4 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/index.js"]
+RUN npm start
