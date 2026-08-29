@@ -88,42 +88,32 @@ async function startStdioServer(): Promise<void> {
 async function startHttpServer(): Promise<void> {
   const server = await createMcpServer();
 
+  /*
+    * StreamableHTTPServerTransport handles MCP requests over HTTP.
+    *
+    * A new transport is created for each request in this simple
+    * stateless implementation.
+  */
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+  });
+
   const httpServer = createServer(async (req, res) => {
     if (req.url !== "/mcp") {
-      res.writeHead(404, {
-        "content-type": "text/plain; charset=utf-8",
-      });
+      res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
       res.end("Not Found");
       return;
     }
 
     try {
-      /*
-       * StreamableHTTPServerTransport handles MCP requests over HTTP.
-       *
-       * A new transport is created for each request in this simple
-       * stateless implementation.
-       */
-      const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined,
-      });
-
       await server.connect(transport);
-
       await transport.handleRequest(req, res);
     } catch (error) {
       console.error("MCP request failed:", error);
 
       if (!res.headersSent) {
-        res.writeHead(500, {
-          "content-type": "application/json; charset=utf-8",
-        });
-
-        res.end(
-          JSON.stringify({
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        );
+        res.writeHead(500, {"content-type": "application/json; charset=utf-8"});
+        res.end(JSON.stringify({error: error instanceof Error ? error.message : String(error)}));
       }
     }
   });
@@ -135,12 +125,10 @@ async function startHttpServer(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (TRANSPORT_MODE === "server") {
-    await startHttpServer();
-    return;
+  switch(TRANSPORT_MODE){
+    case "local"  : await startStdioServer();break;
+    case "server" : await startHttpServer();break;
   }
-
-  await startStdioServer();
 }
 
 main().catch((error) => {
