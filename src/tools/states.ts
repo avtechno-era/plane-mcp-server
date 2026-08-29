@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { projectIdField, responseFormatField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, mdList } from "../format.js";
@@ -37,11 +37,11 @@ export function registerStateTools(server: McpServer, client: PlaneClient): void
       description: `List the workflow states (columns) configured for a project, e.g. Backlog, Todo, In Progress, Done, Cancelled. Each state belongs to a group (backlog/unstarted/started/completed/cancelled) used for progress reporting.
 
 Use this before plane_create_work_item or plane_update_work_item if you need a state's UUID rather than its name.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -68,14 +68,14 @@ Use this before plane_create_work_item or plane_update_work_item if you need a s
     {
       title: "Create Plane Work Item State",
       description: `Create a new custom workflow state (board column) in a project.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("State name, e.g. 'In Review'."),
         group: stateGroupField,
         color: z.string().optional().describe("Hex color, e.g. '#5e6ad2'."),
         description: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, name, group, color, description }) => {
@@ -102,7 +102,7 @@ Use this before plane_create_work_item or plane_update_work_item if you need a s
     {
       title: "Update Plane Work Item State",
       description: `Rename, recolor, or regroup an existing workflow state.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         state_id: stateIdField,
@@ -110,7 +110,7 @@ Use this before plane_create_work_item or plane_update_work_item if you need a s
         group: stateGroupField.optional(),
         color: z.string().optional(),
         description: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, state_id, ...updates }) => {
@@ -137,7 +137,7 @@ Use this before plane_create_work_item or plane_update_work_item if you need a s
     {
       title: "Delete Plane Work Item State",
       description: `Delete a workflow state. Plane will typically refuse this if work items still reference it — move or update those work items to another state first.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField, state_id: stateIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField, state_id: stateIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, state_id }) => {

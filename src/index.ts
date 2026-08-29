@@ -27,7 +27,7 @@
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { createServer } from "node:http";
 
 import { loadConfig } from "./config.js";
@@ -47,8 +47,7 @@ import { registerPageTools } from "./tools/pages.js";
 
 type TransportMode = "local" | "server";
 
-const TRANSPORT_MODE: TransportMode =
-  process.env.MODE?.toLowerCase() === "server" ? "server" : "local";
+const TRANSPORT_MODE: TransportMode = process.env.MODE?.toLowerCase() === "server" ? "server" : "local";
 
 const PORT = Number.parseInt(process.env.PORT ?? "3000", 10);
 
@@ -100,6 +99,7 @@ async function startHttpServer(): Promise<void> {
   await server.connect(transport);
 
   const httpServer = createServer(async (req, res) => {
+
     if (req.url !== "/mcp") {
       res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
       res.end("Not Found");

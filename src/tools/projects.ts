@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import {
   cursorField,
@@ -32,12 +32,12 @@ Returns paginated list of projects with id, name, identifier, description, total
 Examples:
   - Use when: "What projects do we have?"
   - Use when: you need a project_id for another tool but only know the project's name.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, cursor, per_page, response_format }) => {
@@ -75,11 +75,11 @@ Examples:
 Args:
   - project_id (string, required): UUID from plane_list_projects.
   - workspace_slug (string, optional): defaults to PLANE_WORKSPACE_SLUG.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -121,7 +121,7 @@ Args:
   - project_lead (string, optional): UUID of the workspace member who leads the project.
 
 Returns the created project including its id (save this — most other tools require project_id).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         name: z.string().min(1).max(255).describe("Project name."),
         identifier: z
@@ -132,7 +132,7 @@ Returns the created project including its id (save this — most other tools req
         description: z.string().optional().describe("Project description."),
         network: z.union([z.literal(0), z.literal(2)]).optional().describe("0 = Secret (private), 2 = Public."),
         project_lead: z.string().optional().describe("UUID of the workspace member leading the project.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, name, identifier, description, network, project_lead }) => {
@@ -163,7 +163,7 @@ Args:
   - project_id (string, required).
   - workspace_slug (string, optional): defaults to PLANE_WORKSPACE_SLUG.
   - name, description, network, project_lead, default_assignee (all optional).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).optional(),
@@ -171,7 +171,7 @@ Args:
         network: z.union([z.literal(0), z.literal(2)]).optional().describe("0 = Secret, 2 = Public."),
         project_lead: z.string().optional().describe("UUID of the new project lead."),
         default_assignee: z.string().optional().describe("UUID of the default assignee for new work items.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, ...updates }) => {
@@ -198,7 +198,7 @@ Args:
     {
       title: "Archive Plane Project",
       description: `Archive a project, hiding it from the default project list without deleting its data. Reversible with plane_unarchive_project.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id }) => {
@@ -221,7 +221,7 @@ Args:
     {
       title: "Unarchive Plane Project",
       description: `Restore a previously archived project so it appears in the default project list again.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id }) => {
@@ -246,7 +246,7 @@ Args:
       description: `PERMANENTLY delete a project and all its work items, cycles, modules, and history. This cannot be undone.
 
 Only use this when the user has explicitly confirmed they want to permanently delete the project. For hiding a project without data loss, use plane_archive_project instead.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id }) => {

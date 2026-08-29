@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { cursorField, perPageField, projectIdField, responseFormatField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, mdList } from "../format.js";
@@ -19,13 +19,13 @@ export function registerIntakeTools(server: McpServer, client: PlaneClient): voi
     {
       title: "List Plane Intake Issues",
       description: `List work items sitting in a project's Intake — a triage queue for incoming requests/bugs before they're accepted into the backlog. Use this to help the user process their triage queue.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cursor, per_page, response_format }) => {
@@ -53,13 +53,13 @@ export function registerIntakeTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Add Plane Intake Issue",
       description: `Submit a new work item into a project's Intake triage queue (rather than creating it directly in the backlog via plane_create_work_item). Useful for logging incoming requests that need review before being accepted.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Title of the incoming request/bug."),
         description_html: z.string().optional().describe("HTML description."),
         priority: z.enum(["urgent", "high", "medium", "low", "none"]).optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, name, description_html, priority }) => {
@@ -89,12 +89,12 @@ export function registerIntakeTools(server: McpServer, client: PlaneClient): voi
 
 Args:
   - status (required): -2 Pending, -1 Rejected, 0 Snoozed, 1 Accepted, 2 Duplicate.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         intake_issue_id: intakeIssueIdField,
         status: intakeStatusField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, intake_issue_id, status }) => {

@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { projectIdField, responseFormatField, workItemIdField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, fmtDate, mdList } from "../format.js";
@@ -22,11 +22,11 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "List Plane Cycles",
       description: `List a project's cycles (sprints) with their date ranges, status, and completion counts. Use this to find the current/upcoming cycle before reporting sprint progress.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -50,12 +50,12 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Get Plane Cycle",
       description: `Get full details and progress counts for a single cycle (sprint).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cycle_id: cycleIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id, response_format }) => {
@@ -77,7 +77,7 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Create Plane Cycle",
       description: `Create a new cycle (sprint/iteration) in a project.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Cycle name, e.g. 'Sprint 24'."),
@@ -85,7 +85,7 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
         start_date: z.string().optional().describe("ISO date/datetime, e.g. '2026-08-01'."),
         end_date: z.string().optional().describe("ISO date/datetime, e.g. '2026-08-14'."),
         owned_by: z.string().optional().describe("UUID of the cycle owner; defaults to the authenticated user.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, ...body }) => {
@@ -112,7 +112,7 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Update Plane Cycle",
       description: `Update a cycle's name, description, or date range.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cycle_id: cycleIdField,
@@ -120,7 +120,7 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
         description: z.string().optional(),
         start_date: z.string().optional(),
         end_date: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id, ...updates }) => {
@@ -147,7 +147,7 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Delete Plane Cycle",
       description: `Permanently delete a cycle. Work items that were in it are unassigned from the cycle, not deleted.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField, cycle_id: cycleIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField, cycle_id: cycleIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id }) => {
@@ -170,12 +170,12 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "List Plane Cycle Work Items",
       description: `List the work items currently assigned to a cycle — use this for sprint status/burndown style reporting.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cycle_id: cycleIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id, response_format }) => {
@@ -202,12 +202,12 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Add Work Items to Plane Cycle",
       description: `Assign one or more existing work items to a cycle (sprint planning). Provide the work item UUIDs; get them from plane_list_work_items or plane_search_work_items.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cycle_id: cycleIdField,
         work_item_ids: z.array(z.string()).min(1).describe("UUIDs of work items to add to this cycle.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id, work_item_ids }) => {
@@ -234,12 +234,12 @@ export function registerCycleTools(server: McpServer, client: PlaneClient): void
     {
       title: "Remove Work Item from Plane Cycle",
       description: `Remove a single work item from a cycle without deleting the work item itself.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cycle_id: cycleIdField,
         work_item_id: workItemIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cycle_id, work_item_id }) => {

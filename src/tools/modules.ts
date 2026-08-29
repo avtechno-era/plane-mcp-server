@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { projectIdField, responseFormatField, workItemIdField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, fmtDate, mdList } from "../format.js";
@@ -23,11 +23,11 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "List Plane Modules",
       description: `List a project's modules (feature groupings that can span multiple cycles) with status and completion counts.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -51,12 +51,12 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Get Plane Module",
       description: `Get full details and progress counts for a single module.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         module_id: moduleIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id, response_format }) => {
@@ -78,7 +78,7 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Create Plane Module",
       description: `Create a new module (feature/workstream grouping) in a project.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Module name, e.g. 'Onboarding revamp'."),
@@ -88,7 +88,7 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
         status: moduleStatusField.optional(),
         lead: z.string().optional().describe("UUID of the module lead."),
         members: z.array(z.string()).optional().describe("UUIDs of members working on this module.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, ...body }) => {
@@ -115,7 +115,7 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Update Plane Module",
       description: `Update a module's name, description, dates, status, lead, or member list.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         module_id: moduleIdField,
@@ -126,7 +126,7 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
         status: moduleStatusField.optional(),
         lead: z.string().optional(),
         members: z.array(z.string()).optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id, ...updates }) => {
@@ -153,7 +153,7 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Delete Plane Module",
       description: `Permanently delete a module. Work items that were in it are unassigned from the module, not deleted.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField, module_id: moduleIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField, module_id: moduleIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id }) => {
@@ -176,12 +176,12 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "List Plane Module Work Items",
       description: `List the work items currently assigned to a module.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         module_id: moduleIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id, response_format }) => {
@@ -208,12 +208,12 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Add Work Items to Plane Module",
       description: `Assign one or more existing work items to a module.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         module_id: moduleIdField,
         work_item_ids: z.array(z.string()).min(1).describe("UUIDs of work items to add to this module.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id, work_item_ids }) => {
@@ -240,12 +240,12 @@ export function registerModuleTools(server: McpServer, client: PlaneClient): voi
     {
       title: "Remove Work Item from Plane Module",
       description: `Remove a single work item from a module without deleting the work item itself.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         module_id: moduleIdField,
         work_item_id: workItemIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, module_id, work_item_id }) => {
