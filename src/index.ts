@@ -97,6 +97,7 @@ async function startHttpServer(): Promise<void> {
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
+  await server.connect(transport);
 
   const httpServer = createServer(async (req, res) => {
     if (req.url !== "/mcp") {
@@ -106,7 +107,6 @@ async function startHttpServer(): Promise<void> {
     }
 
     try {
-      await server.connect(transport);
       await transport.handleRequest(req, res);
     } catch (error) {
       console.error("MCP request failed:", error);
