@@ -8,7 +8,7 @@
     "plane-mcp-server": "dist/index.js"
   },
   "scripts": {
-    "start": "node --require dotenv/config dist/hono-index.js",
+    "start": "node --require dotenv/config dist/index.js",
     "dev": "tsx watch --require dotenv/config  src/index.ts",
     "dev:hono": "tsx watch --require dotenv/config src/hono-index.ts",
     "build": "tsc",
