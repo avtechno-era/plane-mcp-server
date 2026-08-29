@@ -166,3 +166,5 @@ export interface CursorPage<T> {
   prev_page_results?: boolean;
   [key: string]: unknown;
 }
+
+export type SupportedTransportTypes = ("local" | "server")

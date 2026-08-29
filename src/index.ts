@@ -31,6 +31,13 @@ import { registerCycleTools } from "./tools/cycles.js";
 import { registerModuleTools } from "./tools/modules.js";
 import { registerIntakeTools } from "./tools/intake.js";
 import { registerPageTools } from "./tools/pages.js";
+import {SupportedTransportTypes} from "./types.js";
+import {StreamableHTTPServerTransport} from "@modelcontextprotocol/sdk/server/streamableHttp";
+import {createServer} from "http";
+
+// @ts-ignore
+const TRANSPORT_MODE: SupportedTransportTypes = (process.env.MODE || "local").toLowerCase();
+const PORT = process.env.PORT || 3000;
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -53,13 +60,44 @@ async function main(): Promise<void> {
   registerIntakeTools(server, client);
   registerPageTools(server, client);
 
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error(
-    `plane-mcp-server running via stdio (base URL: ${config.baseUrl}${
-      config.defaultWorkspaceSlug ? `, default workspace: ${config.defaultWorkspaceSlug}` : ""
-    })`
-  );
+  let transport = null;
+  
+  switch(TRANSPORT_MODE){
+    case "local": transport = new StdioServerTransport();break;
+    case "server": transport = new StreamableHTTPServerTransport({});
+  }
+
+  if(transport){
+    await server.connect(transport);
+
+
+    if(TRANSPORT_MODE === "server" && transport instanceof StreamableHTTPServerTransport){
+      const http = createServer(async(req, res)=>{
+        if(req.url !== "/mcp"){
+          res.writeHead(404, {"content-type":"text/plain"});
+          res.end("Not Found");
+          return;
+        }
+
+        try{
+          await transport.handleRequest(req, res);
+        }catch(error){
+          console.error(`MCP request failed:`, error);
+
+          if(!res.headersSent){
+            res.writeHead(500, {"content-type":"application/json"});
+            res.end(JSON.stringify({error}));
+          }
+        }
+      });
+
+      http.listen(PORT,()=>{
+        console.log(`Plane MCP Server is running on port ${PORT}`);
+      });
+    }else{
+      console.log(`Plane MCP Server is running on stdio`);
+    }
+  }
 }
 
 main().catch((error) => {

@@ -26,7 +26,7 @@ function pageLine(p: PlanePage): string {
   const accessLabel = p.access ? (p.access === 0 ? "public" : "private") : "?";
   const createdLabel = p.created_at ? fmtDate(p.created_at) : "?";
   return `**${p.name}** — access: ${accessLabel}, created: ${createdLabel}, id: ${p.id}${
-    p.description ? ` — ${truncateText(p.description, 100)}` : ""
+    p.description
   }`;
 }
 
