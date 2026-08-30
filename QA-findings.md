@@ -26,6 +26,8 @@ Tested: 2026-08-30 · Workspace: `computebay` · Method: live calls against a te
 
 ## 🐛 Bugs found
 
+**Note: Pages API is inaccessible due to a [silent deprecation/feature-gating of upstream repo](https://github.com/makeplane/plane/issues/8986)**
+
 | # | Tool | Issue | Severity |
 |---|---|---|---|
 | 1 | `plane_list_labels` | Fails with `items.map is not a function` — can't list labels at all | High |
