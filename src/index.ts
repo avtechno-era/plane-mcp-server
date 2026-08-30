@@ -56,9 +56,6 @@ if (TRANSPORT_MODE === 'local') {
     console.log('[server] serving over stdio');
 } else {
     const handler = createMcpHandler(buildServer);
-
-    // `createMcpHonoApp()` arms localhost host/origin validation by default;
-    // bind loopback explicitly to match.
     const app = createMcpHonoApp({
       allowedHosts: [ HOST ]
     });
