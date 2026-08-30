@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { projectIdField, responseFormatField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, mdList } from "../format.js";
@@ -14,11 +14,11 @@ export function registerLabelTools(server: McpServer, client: PlaneClient): void
     {
       title: "List Plane Work Item Labels",
       description: `List the labels defined in a project. Use this to find a label's UUID before attaching it to a work item via plane_create_work_item or plane_update_work_item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -43,13 +43,13 @@ export function registerLabelTools(server: McpServer, client: PlaneClient): void
     {
       title: "Create Plane Work Item Label",
       description: `Create a new label in a project for tagging/categorizing work items (e.g. "bug", "needs-design").`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Label name."),
         color: z.string().optional().describe("Hex color, e.g. '#e11d48'."),
         description: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, name, color, description }) => {
@@ -76,14 +76,14 @@ export function registerLabelTools(server: McpServer, client: PlaneClient): void
     {
       title: "Update Plane Work Item Label",
       description: `Rename or recolor an existing label.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         label_id: labelIdField,
         name: z.string().min(1).max(255).optional(),
         color: z.string().optional(),
         description: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, label_id, ...updates }) => {
@@ -110,7 +110,7 @@ export function registerLabelTools(server: McpServer, client: PlaneClient): void
     {
       title: "Delete Plane Work Item Label",
       description: `Delete a label from a project. It is automatically removed from any work items that had it applied.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField, label_id: labelIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField, label_id: labelIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, label_id }) => {

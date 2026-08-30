@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import {
   cursorField,
@@ -39,7 +39,7 @@ Args:
   - cursor, per_page: pagination.
 
 Returns paginated work items with id, name, priority, state, sequence_id, assignees, labels, dates.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         order_by: z.string().optional().describe("Sort field, e.g. '-created_at' or 'priority'."),
@@ -47,7 +47,7 @@ Returns paginated work items with id, name, priority, state, sequence_id, assign
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, order_by, expand, cursor, per_page, response_format }) => {
@@ -83,13 +83,13 @@ Returns paginated work items with id, name, priority, state, sequence_id, assign
       description: `Get full details of a single work item by its UUID, including description, priority, state, assignees, labels, and dates.
 
 If you only know the human-readable identifier (e.g. "ENG-123") rather than the UUID, use plane_get_work_item_by_identifier instead.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         expand: expandField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, expand, response_format }) => {
@@ -127,12 +127,12 @@ If you only know the human-readable identifier (e.g. "ENG-123") rather than the 
 Args:
   - project_identifier (string, required): the project's short key, e.g. "ENG" (see plane_list_projects).
   - issue_number (integer, required): the numeric part, e.g. 123 for "ENG-123".`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_identifier: z.string().min(1).describe("Project key/prefix, e.g. 'ENG' in 'ENG-123'."),
         issue_number: z.number().int().positive().describe("Numeric sequence id, e.g. 123 in 'ENG-123'."),
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_identifier, issue_number, response_format }) => {
@@ -166,14 +166,14 @@ Args:
   - project_id (string, optional): restrict to one project; omit to search the whole workspace.
   - workspace_search (boolean, optional): explicitly search across the whole workspace.
   - limit (integer, optional): max results (default 10).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         search: z.string().min(1).describe("Search text."),
         project_id: z.string().optional().describe("Restrict search to this project's UUID."),
         workspace_search: z.boolean().optional().describe("Search across all projects in the workspace."),
         limit: z.number().int().min(1).max(100).default(10).describe("Maximum number of results."),
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, search, project_id, workspace_search, limit, response_format }) => {
@@ -215,7 +215,7 @@ Args:
       target_date: ["YYYY-MM-DD;before" | "YYYY-MM-DD;after" | "YYYY-MM-DD;lte" ...] (check your Plane version's exact filter syntax if this errors)
     If unsure of exact filter syntax for your instance, prefer resolving UUIDs first (plane_list_states, plane_list_labels, plane_list_workspace_members) then pass minimal filters, and fall back to plane_list_work_items + manual filtering if this returns an error.
   - limit (integer, optional): max results (default 25).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         query: z.string().optional().describe("Free-text search query."),
@@ -224,7 +224,7 @@ Args:
           .optional()
           .describe("Structured filter object, e.g. {\"priority\": [\"urgent\",\"high\"], \"state_group\": [\"started\"]}."),
         limit: z.number().int().min(1).max(100).default(25).describe("Maximum number of results.")
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, query, filters, limit }) => {
@@ -282,7 +282,7 @@ Args:
   - start_date, target_date (string, optional): 'YYYY-MM-DD'.
 
 Returns the created work item including its id and sequence_id (combine with the project identifier for the human-readable "PROJ-123" form).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Work item title."),
@@ -294,7 +294,7 @@ Returns the created work item including its id and sequence_id (combine with the
         parent: z.string().optional().describe("UUID of the parent work item, if this is a sub-item."),
         start_date: z.string().optional().describe("Start date, YYYY-MM-DD."),
         target_date: z.string().optional().describe("Due date, YYYY-MM-DD.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, ...body }) => {
@@ -323,7 +323,7 @@ Returns the created work item including its id and sequence_id (combine with the
       description: `Update fields on an existing work item — move it to a new state, reassign it, change priority/dates, edit its description, or replace its labels. Only the fields you supply are changed; omit fields you don't want to touch.
 
 To close/complete a work item, set state to a UUID from a state whose group is 'completed' (see plane_list_states).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
@@ -336,7 +336,7 @@ To close/complete a work item, set state to a UUID from a state whose group is '
         parent: z.string().nullable().optional().describe("UUID of new parent, or null to remove parent."),
         start_date: z.string().optional(),
         target_date: z.string().optional()
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, ...updates }) => {
@@ -363,7 +363,7 @@ To close/complete a work item, set state to a UUID from a state whose group is '
     {
       title: "Delete Plane Work Item",
       description: `Permanently delete a work item, including its comments, links, and activity history. This cannot be undone. Confirm with the user before calling this unless they were explicit about deleting.`,
-      inputSchema: { workspace_slug: workspaceSlugField, project_id: projectIdField, work_item_id: workItemIdField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, project_id: projectIdField, work_item_id: workItemIdField }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id }) => {

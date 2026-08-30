@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import {
   cursorField,
@@ -24,14 +24,14 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "List Plane Work Item Comments",
       description: `List the discussion comments on a work item, in order. Use this to catch up on context before replying or making a decision on an item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, cursor, per_page, response_format }) => {
@@ -59,12 +59,12 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "Add Plane Work Item Comment",
       description: `Post a new comment on a work item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         comment_html: z.string().min(1).describe("HTML body of the comment, e.g. '<p>Looks good, shipping this.</p>'.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, comment_html }) => {
@@ -91,13 +91,13 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "Update Plane Work Item Comment",
       description: `Edit the text of an existing comment.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         comment_id: commentIdField,
         comment_html: z.string().min(1).describe("New HTML body for the comment.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, comment_id, comment_html }) => {
@@ -124,12 +124,12 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "Delete Plane Work Item Comment",
       description: `Permanently delete a comment from a work item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         comment_id: commentIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, comment_id }) => {
@@ -157,14 +157,14 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "List Plane Work Item Activity",
       description: `List the audit trail of field changes on a work item (state transitions, reassignments, priority changes, etc.) — useful for reconstructing "what happened and when" on an item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, cursor, per_page, response_format }) => {
@@ -197,12 +197,12 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "List Plane Work Item Links",
       description: `List external URLs attached to a work item (e.g. links to a PR, design file, or doc).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, response_format }) => {
@@ -227,13 +227,13 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "Add Plane Work Item Link",
       description: `Attach an external URL (PR, design, doc, etc.) to a work item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         url: z.string().url().describe("The URL to attach."),
         title: z.string().optional().describe("Display title for the link.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, url, title }) => {
@@ -260,12 +260,12 @@ export function registerWorkItemDetailTools(server: McpServer, client: PlaneClie
     {
       title: "Delete Plane Work Item Link",
       description: `Remove an external link from a work item.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         work_item_id: workItemIdField,
         link_id: linkIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, work_item_id, link_id }) => {

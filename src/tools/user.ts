@@ -1,10 +1,10 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
 import { PlaneClient } from "../client.js";
 import { responseFormatField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, mdList } from "../format.js";
 import { ResponseFormat } from "../constants.js";
 import { PlaneUser } from "../types.js";
+import * as z from 'zod/v4';
 
 export function registerUserTools(server: McpServer, client: PlaneClient): void {
   server.registerTool(
@@ -20,7 +20,7 @@ Returns: id, first_name, last_name, display_name, email, avatar.
 Examples:
   - Use when: "Who am I connected to Plane as?"
   - Use when: you need your own user UUID before filtering work items by assignee.`,
-      inputSchema: { response_format: responseFormatField },
+      inputSchema: z.object({ response_format: responseFormatField }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ response_format }) => {
@@ -54,7 +54,7 @@ Returns: array of { id, first_name, last_name, display_name, email, role }. role
 Examples:
   - Use when: "Assign this to Priya" -> look up Priya's UUID here first.
   - Use when: "Who's in this workspace?"`,
-      inputSchema: { workspace_slug: workspaceSlugField, response_format: responseFormatField },
+      inputSchema: z.object({ workspace_slug: workspaceSlugField, response_format: responseFormatField }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, response_format }) => {
@@ -77,3 +77,4 @@ Examples:
     }
   );
 }
+

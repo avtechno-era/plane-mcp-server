@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import {
   cursorField,
@@ -46,12 +46,12 @@ Args:
   - cursor, per_page: pagination.
 
 Returns paginated workspace pages with id, name, description, access level, and creation date.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, cursor, per_page, response_format }) => {
@@ -85,11 +85,11 @@ Returns paginated workspace pages with id, name, description, access level, and 
     {
       title: "Get Workspace Page",
       description: `Get the full details and content of a single workspace-level page by its UUID.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         page_id: pageIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, page_id, response_format }) => {
@@ -128,12 +128,12 @@ Args:
   - access (0 | 1, optional): 0 = public (default), 1 = private.
 
 Returns the created page with its id.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         name: z.string().min(1).max(255).describe("Page title."),
         description_html: z.string().optional().describe("HTML page content, e.g. '<p>Documentation...</p>'."),
         access: z.union([z.literal(0), z.literal(1)]).optional().describe("0 = public (default), 1 = private.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, name, description_html, access }) => {
@@ -160,13 +160,13 @@ Returns the created page with its id.`,
     {
       title: "Update Workspace Page",
       description: `Update a workspace-level page's name, description, or access level. Only supplied fields are changed.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         page_id: pageIdField,
         name: z.string().min(1).max(255).optional(),
         description_html: z.string().optional(),
         access: z.union([z.literal(0), z.literal(1)]).optional().describe("0 = public, 1 = private.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, page_id, ...updates }) => {
@@ -193,10 +193,10 @@ Returns the created page with its id.`,
     {
       title: "Delete Workspace Page",
       description: `Permanently delete a workspace-level page. This cannot be undone. Confirm with the user before calling this unless they were explicit.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         page_id: pageIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, page_id }) => {
@@ -230,13 +230,13 @@ Args:
   - cursor, per_page: pagination.
 
 Returns paginated project pages with id, name, description, access level, and creation date.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         cursor: cursorField,
         per_page: perPageField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, cursor, per_page, response_format }) => {
@@ -270,12 +270,12 @@ Returns paginated project pages with id, name, description, access level, and cr
     {
       title: "Get Project Page",
       description: `Get the full details and content of a single project-level page by its UUID.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         page_id: pageIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, page_id, response_format }) => {
@@ -315,13 +315,13 @@ Args:
   - access (0 | 1, optional): 0 = public (default), 1 = private.
 
 Returns the created page with its id.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         name: z.string().min(1).max(255).describe("Page title."),
         description_html: z.string().optional().describe("HTML page content."),
         access: z.union([z.literal(0), z.literal(1)]).optional().describe("0 = public (default), 1 = private.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, name, description_html, access }) => {
@@ -348,14 +348,14 @@ Returns the created page with its id.`,
     {
       title: "Update Project Page",
       description: `Update a project-level page's name, description, or access level. Only supplied fields are changed.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         page_id: pageIdField,
         name: z.string().min(1).max(255).optional(),
         description_html: z.string().optional(),
         access: z.union([z.literal(0), z.literal(1)]).optional().describe("0 = public, 1 = private.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, page_id, ...updates }) => {
@@ -382,11 +382,11 @@ Returns the created page with its id.`,
     {
       title: "Delete Project Page",
       description: `Permanently delete a project-level page. This cannot be undone. Confirm with the user before calling this unless they were explicit.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         page_id: pageIdField
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, page_id }) => {

@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node --require dotenv/config dist/index.js",
     "dev": "tsx watch --require dotenv/config  src/index.ts",
+    "dev:hono": "tsx watch --require dotenv/config src/hono-index.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -17,11 +18,14 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@modelcontextprotocol/hono": "^2.0.0",
     "@modelcontextprotocol/node": "^2.0.0",
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "@modelcontextprotocol/server": "^2.0.0",
     "axios": "^1.7.9",
     "dotenv": "^17.4.2",
-    "zod": "^3.23.8"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",

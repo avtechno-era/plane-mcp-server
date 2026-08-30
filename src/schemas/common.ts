@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from 'zod/v4';
 import { DEFAULT_PER_PAGE, MAX_PER_PAGE, ResponseFormat } from "../constants.js";
 
 /** Every tool accepts an optional workspace_slug; falls back to PLANE_WORKSPACE_SLUG if omitted. */
@@ -22,7 +22,7 @@ export const workItemIdField = z
   .describe("UUID of the work item (from plane_list_work_items, plane_create_work_item, or plane_search_work_items).");
 
 export const responseFormatField = z
-  .nativeEnum(ResponseFormat)
+  .enum(ResponseFormat)
   .default(ResponseFormat.MARKDOWN)
   .describe("Output format: 'markdown' for human-readable text (default) or 'json' for machine-readable structured data.");
 

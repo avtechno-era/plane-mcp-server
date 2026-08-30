@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from 'zod/v4';
 import { PlaneClient } from "../client.js";
 import { projectIdField, responseFormatField, workspaceSlugField } from "../schemas/common.js";
 import { buildResult, errorResult, mdList } from "../format.js";
@@ -12,11 +12,11 @@ export function registerMemberTools(server: McpServer, client: PlaneClient): voi
     {
       title: "List Plane Project Members",
       description: `List the members of a specific project (a subset of the workspace's members). Use plane_list_workspace_members to see everyone in the workspace, and this tool to see who is actually staffed on a given project.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         response_format: responseFormatField
-      },
+      }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, response_format }) => {
@@ -50,12 +50,12 @@ export function registerMemberTools(server: McpServer, client: PlaneClient): voi
 Args:
   - member_id (string, required): UUID of the workspace member to add.
   - role (integer, optional): permission level in the project. Plane convention: 5=Guest, 10=Viewer, 15=Member, 20=Admin. Defaults to Member (15) if omitted.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         member_id: z.string().min(1).describe("UUID of the workspace member to add to the project."),
         role: z.number().int().optional().describe("Permission level: 5=Guest, 10=Viewer, 15=Member, 20=Admin.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, member_id, role }) => {
@@ -82,12 +82,12 @@ Args:
     {
       title: "Update Plane Project Member Role",
       description: `Change a project member's role (permission level).`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         member_id: z.string().min(1).describe("UUID of the project member record to update."),
         role: z.number().int().describe("New permission level: 5=Guest, 10=Viewer, 15=Member, 20=Admin.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, member_id, role }) => {
@@ -114,11 +114,11 @@ Args:
     {
       title: "Remove Plane Project Member",
       description: `Remove a member from a project. They remain a workspace member but lose access to this specific project and are unassigned from its work items.`,
-      inputSchema: {
+      inputSchema: z.object({
         workspace_slug: workspaceSlugField,
         project_id: projectIdField,
         member_id: z.string().min(1).describe("UUID of the project member record to remove.")
-      },
+      }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
     },
     async ({ workspace_slug, project_id, member_id }) => {
