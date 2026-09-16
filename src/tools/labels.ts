@@ -8,6 +8,25 @@ import { PlaneLabel } from "../types.js";
 
 const labelIdField = z.string().min(1).describe("UUID of the label (from plane_list_labels).");
 
+/**
+ * Plane label endpoints are not consistent across deployments:
+ * - bare array: [...]
+ * - paginated result: { results: [...] }
+ * - group/object keyed: { backlog: [...], started: [...] }
+ */
+function extractLabels(raw: unknown): PlaneLabel[] {
+  if (Array.isArray(raw)) return raw as PlaneLabel[];
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.results)) return obj.results as PlaneLabel[];
+    const values = Object.values(obj);
+    if (values.every((v) => Array.isArray(v))) {
+      return (values as PlaneLabel[][]).flat();
+    }
+  }
+  return [];
+}
+
 export function registerLabelTools(server: McpServer, client: PlaneClient): void {
   server.registerTool(
     "plane_list_labels",
@@ -24,13 +43,15 @@ export function registerLabelTools(server: McpServer, client: PlaneClient): void
     async ({ workspace_slug, project_id, response_format }) => {
       try {
         const slug = client.resolveWorkspaceSlug(workspace_slug);
-        const labels = await client.request<PlaneLabel[]>(
+        const raw = await client.request<unknown>(
           "GET",
           `/workspaces/${slug}/projects/${project_id}/labels/`
         );
-        const markdown = [`# Labels (${labels.length})`, mdList(labels, (l) => `**${l.name}** — id: ${l.id}`)].join(
-          "\n"
-        );
+        const labels = extractLabels(raw);
+        const markdown = [
+          `# Labels (${labels.length})`,
+          mdList(labels, (l) => `**${l.name}** — id: ${l.id}`)
+        ].join("\n");
         return buildResult({ format: response_format, markdown, structured: { project_id, count: labels.length, labels } });
       } catch (error) {
         return errorResult(error instanceof Error ? error.message : String(error));
