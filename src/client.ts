@@ -61,6 +61,29 @@ export class PlaneClient {
       throw toPlaneApiError(error);
     }
   }
+
+  /** Upload a multipart form to a presigned URL returned by Plane. */
+  async uploadToPresignedUrl(
+    url: string,
+    fields: Record<string, string>,
+    file: Blob,
+    fileName: string,
+    contentType: string
+  ): Promise<void> {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) form.append(key, value);
+    form.append("file", file, fileName);
+    try {
+      await axios.post(url, form, {
+        headers: { "Content-Type": contentType },
+        timeout: 30000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity
+      });
+    } catch (error) {
+      throw toPlaneApiError(error);
+    }
+  }
 }
 
 /** Remove undefined values so they aren't serialized as query params. */
